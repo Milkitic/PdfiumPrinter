@@ -58,6 +58,12 @@ public static class NativeLibraryLoader
             _ => throw new PlatformNotSupportedException($"Unsupported OS platform, architecture: {RuntimeInformation.OSArchitecture}")
         };
 
+        var fullPath = Path.GetFullPath(fileName);
+        if (File.Exists(fullPath))
+        {
+            return LoadTarget(platform, fullPath);
+        }
+
         if (string.IsNullOrEmpty(path))
         {
             var assemblySearchPath = new[]
@@ -90,6 +96,12 @@ public static class NativeLibraryLoader
                 $"or install the default libraries with the bblanchon.PDFium NuGet.");
         }
 
+        return LoadTarget(platform, path);
+#endif
+    }
+
+    private static LoadResult LoadTarget(string platform, string fullPath)
+    {
         ILibraryLoader libraryLoader = platform switch
         {
             "win" => new WindowsLibraryLoader(),
@@ -98,8 +110,7 @@ public static class NativeLibraryLoader
             _ => throw new PlatformNotSupportedException($"Currently {platform} platform is not supported")
         };
 
-        var result = libraryLoader.OpenLibrary(path);
+        var result = libraryLoader.OpenLibrary(fullPath);
         return result;
-#endif
     }
 }
